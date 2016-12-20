@@ -1,6 +1,12 @@
 --USE EVERY UNIT WITH MICROMETER!
 
 cutorch = require 'cutorch'
+local  LIP = require 'JSON'
+
+
+
+
+
 
 diffusionCoefficient = 0
 deltaTime = 0
@@ -20,23 +26,45 @@ tranmittersRadius = {}
 
 -- Reads the configuration file
 function readConfiguration()
-	diffusionCoefficient = 79.4
-	deltaTime = 0.005
-	runTime = 100
-	symbolSize = 1000
-	symbolDuration = 1
-	numberOfReceivers = 1
-	numberOfTranmitters = 1
+
+	print 'Reading configuration file...'
+	mode = 0
+	file = torch.DiskFile('config2', 'r')
+	configurationObject = file:readObject()
+
+
+
+	diffusionCoefficient = configurationObject.diffusionCoefficient
+	deltaTime = configurationObject.deltaTime
+	runTime = configurationObject.runTime
+	symbolSize = configurationObject.symbolSize
+	symbolDuration = configurationObject.symbolDuration
+	numberOfReceivers = configurationObject.numberOfReceivers
+	numberOfTranmitters = configurationObject.numberOfTranmitters
+
 	receiversCoordinates = torch.CudaTensor(numberOfReceivers, 3)
 	transmittersCoordinates = torch.CudaTensor(numberOfTranmitters, 3)
 	receiversRadius = torch.CudaTensor(numberOfReceivers)
 	transmittersRadius = torch.CudaTensor(numberOfTranmitters)
 	
-	receiversCoordinates[1] = torch.CudaTensor({60, 60, 60})
-	transmittersCoordinates[1] = torch.CudaTensor({40, 40, 40})
-	receiversRadius[1] = 10
-	transmittersRadius[1] = 10
-	moleculeRadius = 2.5e-3
+	for i,v in ipairs(configurationObject.receiversCoordinates) do
+		receiversCoordinates[i] = v;
+	end
+
+	for i,v in ipairs(configurationObject.transmittersCoordinates) do
+		transmittersCoordinates[i] = v;
+	end
+
+	for i,v in ipairs(configurationObject.receiversRadius) do
+		receiversRadius[i] = v;
+	end
+
+	for i,v in ipairs(configurationObject.transmittersRadius) do
+		transmittersRadius[i] = v;
+	end
+
+	moleculeRadius = configurationObject.moleculeRadius
+	print 'Configuration file is read.'
 	
 end
 
