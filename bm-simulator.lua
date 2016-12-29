@@ -11,20 +11,19 @@ symbolDuration = 0
 
 symbolSize = 0
 numberOfReceivers = 0
-numberOfTranmitters = 0
+numberOfTransmitters = 0
 
 moleculeRadius = 0
 receiversCoordinates = {}
-tranmittersCoordinates = {}
+transmittersCoordinates = {}
 receiversRadius = {}
-tranmittersRadius = {}
-
+transmittersRadius = {}
 -- Reads the configuration file
 function readConfiguration()
 
 	print 'Reading configuration file...'
 	mode = 0
-	file = torch.DiskFile('config2', 'r')
+	file = torch.DiskFile('config', 'r')
 	configurationObject = file:readObject()
 
 	diffusionCoefficient = configurationObject.diffusionCoefficient
@@ -33,12 +32,12 @@ function readConfiguration()
 	symbolSize = configurationObject.symbolSize
 	symbolDuration = configurationObject.symbolDuration
 	numberOfReceivers = configurationObject.numberOfReceivers
-	numberOfTranmitters = configurationObject.numberOfTranmitters
+	numberOfTransmitters = configurationObject.numberOfTranmitters
 
 	receiversCoordinates = torch.CudaTensor(numberOfReceivers, 3)
-	transmittersCoordinates = torch.CudaTensor(numberOfTranmitters, 3)
+	transmittersCoordinates = torch.CudaTensor(numberOfTransmitters, 3)
 	receiversRadius = torch.CudaTensor(numberOfReceivers)
-	transmittersRadius = torch.CudaTensor(numberOfTranmitters)
+	transmittersRadius = torch.CudaTensor(numberOfTransmitters)
 	
 	for i,v in ipairs(configurationObject.receiversCoordinates) do
 		receiversCoordinates[i] = v;
@@ -91,24 +90,38 @@ function generateMolecules(transmitterNumber)
 	moleculeZ:add(transmittersCoordinates[transmitterNumber][3])
 	return torch.cat(torch.cat(moleculeX, moleculeY, 1), moleculeZ, 1)
 end
+
 readConfiguration()
+-- TODO: kill the program if the configuration is broken, i.e wrong number of transmitters, etc..
+
+
+-- Set some variables related to simulation
 twoDT = (2 * diffusionCoefficient * deltaTime)
 loopLength = runTime/deltaTime
 symbolCheck = symbolDuration/deltaTime 
 numberOfSymbols = runTime/symbolDuration
 --numberOfMolecules = numberOfSymbols * symbolSize
+-- This tensor holds the number of received molecules in each symbol duration for each receiver
+receiverCount = torch.CudaTensor(numberOfReceivers, numberOfSymbols): fill(0) -- it might be also a double tensor
+-- generate first iteration of molecules
+-- to do concat. first initialize molecules
 molecules = generateMolecules(1)
-
 availability = torch.CudaTensor(symbolSize): fill(1)
-receiverCount = torch.CudaTensor(numberOfSymbols): fill(0) -- it might be also a double tensor
+-- then do for other transmitters.
+for i=2, numberOfTransmitters do
+	molecules = torch.cat(molecules, generateMolecules(i))
+	availability = torch.cat(availability, torch.CudaTensor(symbolSize): fill(1))
+end
 for i = 1, loopLength do
 	if (i - 1) % symbolCheck == 0 and i > 1 then -- If there is time to generate new symbol and evaluate the previous one
 		symbolNumber = (i-1) / symbolCheck 
 		-- evaluation of previous symbol
-		receiverCount[symbolNumber] = availability:size(1) - torch.sum(availability) - torch.sum(receiverCount)
-		-- if symbol is 1, single transmitter
-		molecules = torch.cat(molecules, generateMolecules(1))
-		availability = torch.cat(availability, torch.CudaTensor(symbolSize):fill(1))
+		receiverCount[1][symbolNumber] = availability:size(1) - torch.sum(availability) - torch.sum(receiverCount)
+		for i=1, numberOfTransmitters do
+        		molecules = torch.cat(molecules, generateMolecules(i))
+        		availability = torch.cat(availability, torch.CudaTensor(symbolSize): fill(1))
+     		end
+		
 		
 	end
 	-- Move all available molecules. Received ones are not moved since deltas are multiplying with availability flag.
@@ -133,7 +146,7 @@ for i = 1, loopLength do
 	availability = dist:gt(receiversRadius[1])
 end
 --last symbol
-receiverCount[numberOfSymbols] = availability:size(1) - torch.sum(availability) - torch.sum(receiverCount)
+receiverCount[1][numberOfSymbols] = availability:size(1) - torch.sum(availability) - torch.sum(receiverCount)
 print('Simulation is finished')
 print(receiverCount)
 print('Total number of received molecules')
