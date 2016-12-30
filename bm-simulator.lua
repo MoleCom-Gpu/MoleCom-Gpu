@@ -75,7 +75,7 @@ function generateMolecules(transmitterNumber)
 	subs = torch.pow(radius * radius - sqMoleculeX, 0.5)
         moleculeY = torch.cmul(flag, subs) + torch.cmul(1 - flag, moleculeY)
 	-- now set z as sqrt(r^2-x^2-y^2)
-         moleculeZ = torch.abs(radius * radius - sqMoleculeX - torch.cmul(moleculeY, moleculeY)) -- in order to avoid negative values caused by double precision.
+        moleculeZ = torch.abs(radius * radius - sqMoleculeX - torch.cmul(moleculeY, moleculeY)) -- in order to avoid negative values caused by double precision.
 	moleculeZ:pow(0.5)
         --print(moleculeX, moleculeY, moleculeZ)
 	-- now randomly set sign of z coordinate (by square root only positive values are retrieved but the occurance of positive and negative values are equally likely. 
@@ -96,7 +96,7 @@ readConfiguration()
 
 
 -- Set some variables related to simulation
-twoDT = (2 * diffusionCoefficient * deltaTime)
+twoDT = torch.pow(2 * diffusionCoefficient * deltaTime, 0.5)
 loopLength = runTime/deltaTime
 symbolCheck = symbolDuration/deltaTime 
 numberOfSymbols = runTime/symbolDuration
