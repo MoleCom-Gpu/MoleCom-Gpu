@@ -147,9 +147,21 @@ for i = 1, loopLength do
 end
 --last symbol
 receiverCount[1][numberOfSymbols] = availability:size(1) - torch.sum(availability) - torch.sum(receiverCount)
-print('Simulation is finished')
-print(receiverCount)
-print('Total number of received molecules')
-print(availability:size(1) - torch.sum(availability))
-print('Total number of released molecules')
-print(availability:size(1))
+file = io.open('results.txt', 'w')
+file:write('Simulation results\n')
+file:write('Total number of received molecules\n')
+file:write(availability:size(1) - torch.sum(availability))
+file:write('\nTotal number of released molecules\n')
+file:write(availability:size(1))
+file:write("\n\n")
+file:write("Received molecules per symbol duration for Receiver 1\n")
+for i=1, receiverCount:size(2) do
+	file:write(i)
+	file:write(" => ")
+	file:write(receiverCount[1][i])
+	file:write("\n")
+end
+
+
+--print(receiverCount[1])
+
