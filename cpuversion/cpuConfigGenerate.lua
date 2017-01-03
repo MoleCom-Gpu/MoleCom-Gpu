@@ -21,8 +21,8 @@ local configurationFile = {
 	numberOfReceivers = 1 ,
 	numberOfTranmitters = 1 ,
 
-	receiversCoordinates = { torch.CudaTensor({60, 60, 60}) },
-	transmittersCoordinates = { torch.CudaTensor({40, 40, 40}) },
+	receiversCoordinates = { torch.DoubleTensor({60, 60, 60}) },
+	transmittersCoordinates = { torch.DoubleTensor({40, 40, 40}) },
 	receiversRadius = {10},
 	transmittersRadius ={10} ,
 	moleculeRadius = 2.5e-3
