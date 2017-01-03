@@ -1,7 +1,6 @@
 --USE EVERY UNIT WITH MICROMETER!
 
 cutorch = require 'cutorch'
-local  LIP = require 'JSON'
 
 diffusionCoefficient = 0
 deltaTime = 0

@@ -1,0 +1,27 @@
+	diffusionCoefficient = 79.4 ,
+	deltaTime = 0.0005 ,
+	runTime = 10 ,
+	symbolSize = 100 ,
+	symbolDuration = 1 ,
+	numberOfReceivers = 1 ,
+	numberOfTranmitters = 1 ,
+
+	receiversCoordinates = { torch.CudaTensor({60, 60, 60}) },
+	transmittersCoordinates = { torch.CudaTensor({40, 40, 40}) },
+	receiversRadius = {10},
+	transmittersRadius ={10} ,
+	moleculeRadius = 2.5e-3
+
+
+*****CPU****
+real	0m4.196s
+user	0m3.960s
+sys	0m0.232s
+
+
+
+***GPU ***
+real	0m6.374s
+user	0m6.108s
+sys	0m0.260s
+_______________________________
