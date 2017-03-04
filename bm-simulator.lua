@@ -64,6 +64,14 @@ end
 function generateMolecules(transmitterNumber)
 	-- radius of the given transmitter
 	radius = transmittersRadius[transmitterNumber]
+	if radius == 0 then -- pointlike.
+		moleculeX =  torch.CudaTensor(1, symbolSize): fill (transmittersCoordinates[transmitterNumber][1])
+		moleculeY =  torch.CudaTensor(1, symbolSize): fill (transmittersCoordinates[transmitterNumber][2])
+		moleculeZ =  torch.CudaTensor(1, symbolSize): fill (transmittersCoordinates[transmitterNumber][3])
+		return torch.cat(torch.cat(moleculeX, moleculeY, 1), moleculeZ, 1)	
+	end
+
+	
 	-- randomly generate coordinates for x and y.
 	moleculeX = torch.CudaTensor(1, symbolSize): uniform(-1 * radius, radius)
 	moleculeY = torch.CudaTensor(1, symbolSize): uniform(-1 * radius, radius)

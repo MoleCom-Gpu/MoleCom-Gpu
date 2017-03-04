@@ -14,7 +14,7 @@ file = torch.DiskFile('config', 'w')
 
 local configurationFile = {
 	diffusionCoefficient = 79.4 ,
-	deltaTime = 0.0005 ,
+	deltaTime = 0.005 ,
 	runTime = 10 ,
 	symbolSize = 100 ,
 	symbolDuration = 1 ,
@@ -24,7 +24,7 @@ local configurationFile = {
 	receiversCoordinates = { torch.CudaTensor({60, 60, 60}) },
 	transmittersCoordinates = { torch.CudaTensor({40, 40, 40}) },
 	receiversRadius = {10},
-	transmittersRadius ={10} ,
+	transmittersRadius ={0} ,
 	moleculeRadius = 2.5e-3
 }
 
