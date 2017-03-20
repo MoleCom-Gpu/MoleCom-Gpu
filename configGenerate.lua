@@ -15,9 +15,9 @@ file = torch.DiskFile('config', 'w')
 local configurationFile = {
 	diffusionCoefficient = 79.4 ,
 	deltaTime = 0.005 ,
-	runTime = 10 ,
-	symbolSize = 100 ,
-	symbolDuration = 1 ,
+	runTime = 5 ,
+	symbolSize = 100000 ,
+	symbolDuration = 5 ,
 	numberOfReceivers = 1 ,
 	numberOfTranmitters = 1 ,
 

@@ -1,17 +1,17 @@
 Simulation results
 Total number of received molecules
-102
+114
 Total number of released molecules
 1000
 
 Received molecules per symbol duration for Receiver 1
-1 => 0
-2 => 5
-3 => 10
-4 => 12
+1 => 3
+2 => 4
+3 => 9
+4 => 14
 5 => 9
-6 => 4
-7 => 16
-8 => 17
-9 => 16
+6 => 14
+7 => 12
+8 => 15
+9 => 21
 10 => 13
