@@ -1,6 +1,17 @@
 --USE EVERY UNIT WITH MICROMETER!
 
 cutorch = require 'cutorch'
+cmd = torch.CmdLine()
+cmd:text()
+cmd:text()
+cmd:text('Hello')
+cmd:text('Options')
+cmd:option('-o','result.txt', 'outputfile')
+cmd:text()
+param =cmd:parse(arg)
+outputFileName = param['o']
+
+
 
 diffusionCoefficient = 0
 deltaTime = 0
@@ -20,7 +31,7 @@ transmittersRadius = {}
 -- Reads the configuration file
 function readConfiguration()
 
-	print 'Reading configuration file...'
+	--print 'Reading configuration file...'
 	mode = 0
 	file = torch.DiskFile('config', 'r')
 	configurationObject = file:readObject()
@@ -55,7 +66,7 @@ function readConfiguration()
 	end
 
 	moleculeRadius = configurationObject.moleculeRadius
-	print 'Configuration file is read.'
+	--print 'Configuration file is read.'
 	
 end
 -- It generates molecules for the transmitter. Algorithm works as follows
@@ -68,6 +79,7 @@ function generateMolecules(transmitterNumber)
 		moleculeX =  torch.CudaTensor(1, symbolSize): fill (transmittersCoordinates[transmitterNumber][1])
 		moleculeY =  torch.CudaTensor(1, symbolSize): fill (transmittersCoordinates[transmitterNumber][2])
 		moleculeZ =  torch.CudaTensor(1, symbolSize): fill (transmittersCoordinates[transmitterNumber][3])
+		--print 'radius is zero'
 		return torch.cat(torch.cat(moleculeX, moleculeY, 1), moleculeZ, 1)	
 	end
 
@@ -109,7 +121,7 @@ symbolCheck = symbolDuration/deltaTime
 numberOfSymbols = runTime/symbolDuration
 --numberOfMolecules = numberOfSymbols * symbolSize
 -- This tensor holds the number of received molecules in each symbol duration for each receiver
-receiverCount = torch.CudaTensor(numberOfReceivers, numberOfSymbols): fill(0) -- it might be also a double tensor
+receiverCount = torch.CudaTensor(numberOfReceivers, loopLength): fill(0) -- it might be also a double tensor
 -- generate first iteration of molecules
 -- to do concat. first initialize molecules
 molecules = generateMolecules(1)
@@ -123,7 +135,7 @@ for i = 1, loopLength do
 	if (i - 1) % symbolCheck == 0 and i > 1 then -- If there is time to generate new symbol and evaluate the previous one
 		symbolNumber = (i-1) / symbolCheck 
 		-- evaluation of previous symbol
-		receiverCount[1][symbolNumber] = availability:size(1) - torch.sum(availability) - torch.sum(receiverCount)
+		--receiverCount[1][symbolNumber] = availability:size(1) - torch.sum(availability) - torch.sum(receiverCount)
 		for i=1, numberOfTransmitters do
         		molecules = torch.cat(molecules, generateMolecules(i))
         		availability = torch.cat(availability, torch.CudaTensor(symbolSize): fill(1))
@@ -131,6 +143,7 @@ for i = 1, loopLength do
 		
 		
 	end
+	receiverCount[1][i] = availability:size(1) - torch.sum(availability) - torch.sum(receiverCount[1])
 	-- Move all available molecules. Received ones are not moved since deltas are multiplying with availability flag.
 	numberOfMolecules = molecules:size(2)
 	delta1 = torch.CudaTensor(numberOfMolecules): normal(0, twoDT)
@@ -154,21 +167,22 @@ for i = 1, loopLength do
 end
 --last symbol
 receiverCount[1][numberOfSymbols] = availability:size(1) - torch.sum(availability) - torch.sum(receiverCount)
-file = io.open('results.txt', 'w')
-file:write('Simulation results\n')
-file:write('Total number of received molecules\n')
-file:write(availability:size(1) - torch.sum(availability))
-file:write('\nTotal number of released molecules\n')
-file:write(availability:size(1))
-file:write("\n\n")
-file:write("Received molecules per symbol duration for Receiver 1\n")
+file = io.open(outputFileName, 'w')
+--file:write('Simulation results\n')
+--file:write('Total number of received molecules\n')
+--file:write(availability:size(1) - torch.sum(availability))
+--file:write('\nTotal number of released molecules\n')
+--file:write(availability:size(1))
+--file:write("\n\n")
+--file:write("Received molecules per symbol duration for Receiver 1\n")
 for i=1, receiverCount:size(2) do
-	file:write(i)
-	file:write(" => ")
+	--file:write(i)
+	--file:write(" => ")
+	--file:write(receiverCount[1][i])
 	file:write(receiverCount[1][i])
 	file:write("\n")
 end
-
+--file:write(torch.sum(receiverCount[1]))
 
 --print(receiverCount[1])
 
