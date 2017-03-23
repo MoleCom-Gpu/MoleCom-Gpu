@@ -72,42 +72,47 @@ end
 -- It generates molecules for the transmitter. Algorithm works as follows
 -- First generate coordinates of a molecule supposing the sphere centered at the origin, then move the points by center of the sphere
 -- To generate coordinates first generate x and y coordinates then find z by the fact that a point on a surface of a sphere is exactly far from radius of that sphere.
-function generateMolecules(transmitterNumber)
-	-- radius of the given transmitter
-	radius = transmittersRadius[transmitterNumber]
-	if radius == 0 then -- pointlike.
-		moleculeX =  torch.CudaTensor(1, symbolSize): fill (transmittersCoordinates[transmitterNumber][1])
-		moleculeY =  torch.CudaTensor(1, symbolSize): fill (transmittersCoordinates[transmitterNumber][2])
-		moleculeZ =  torch.CudaTensor(1, symbolSize): fill (transmittersCoordinates[transmitterNumber][3])
-		--print 'radius is zero'
-		return torch.cat(torch.cat(moleculeX, moleculeY, 1), moleculeZ, 1)	
-	end
+function generateMolecules(transmitterNumber, type)
+	if type == 1 then -- Spherical(distributed from single point) or pointlike
+		if radius == 0 then -- pointlike.
+                	moleculeX =  torch.CudaTensor(1, symbolSize): fill (transmittersCoordinates[transmitterNumber][1])
+                	moleculeY =  torch.CudaTensor(1, symbolSize): fill (transmittersCoordinates[transmitterNumber][2])
+                	moleculeZ =  torch.CudaTensor(1, symbolSize): fill (transmittersCoordinates[transmitterNumber][3])
+                	return torch.cat(torch.cat(moleculeX, moleculeY, 1), moleculeZ, 1)
+		else
+			moleculeX =  torch.CudaTensor(1, symbolSize): fill (transmittersCoordinates[transmitterNumber][1] +  transmittersRadius[transmitterNumber])
+                        moleculeY =  torch.CudaTensor(1, symbolSize): fill (transmittersCoordinates[transmitterNumber][2])
+                        moleculeZ =  torch.CudaTensor(1, symbolSize): fill (transmittersCoordinates[transmitterNumber][3])
+                        return torch.cat(torch.cat(moleculeX, moleculeY, 1), moleculeZ, 1)	
+		end
+	elseif type == 2 then -- Spherical(distributed from every point)
+		-- randomly generate coordinates for x and y.
+		moleculeX = torch.CudaTensor(1, symbolSize): uniform(-1 * radius, radius)
+		moleculeY = torch.CudaTensor(1, symbolSize): uniform(-1 * radius, radius)
+		-- if x^2 + y^2 >= r^2, set y^2 = r^2 - x^2 (This might be changed in order to improve randomness)
+        	sqMoleculeX = torch.cmul(moleculeX, moleculeX)
+        	sqMoleculeY = torch.cmul(moleculeY, moleculeY)
+        	flag = (sqMoleculeX + sqMoleculeY - radius * radius):ge(0) 
+		subs = torch.pow(radius * radius - sqMoleculeX, 0.5)
+        	moleculeY = torch.cmul(flag, subs) + torch.cmul(1 - flag, moleculeY)
+		-- now set z as sqrt(r^2-x^2-y^2)
+        	moleculeZ = torch.abs(radius * radius - sqMoleculeX - torch.cmul(moleculeY, moleculeY)) -- in order to avoid negative values caused by double precision.
+		moleculeZ:pow(0.5)
+        	--print(moleculeX, moleculeY, moleculeZ)
+		-- now randomly set sign of z coordinate (by square root only positive values are retrieved but the occurance of positive and negative values are equally likely. 
+        	signGenerator = torch.CudaTensor(1, symbolSize): uniform(-1, 1)
+        	signGenerator = signGenerator:ge(0)
+		moleculeZ = torch.cmul(signGenerator, moleculeZ) + torch.cmul(1 - signGenerator, -moleculeZ)
+		-- check: all values of this tensor should be radius^2 
+		--print(torch.cmul(moleculeX, moleculeX) + torch.cmul(moleculeY, moleculeY) + torch.cmul(moleculeZ, moleculeZ))
+		-- move all points by center of the sphere
+		moleculeX:add(transmittersCoordinates[transmitterNumber][1])
+		moleculeY:add(transmittersCoordinates[transmitterNumber][2])
+		moleculeZ:add(transmittersCoordinates[transmitterNumber][3])
+		return torch.cat(torch.cat(moleculeX, moleculeY, 1), moleculeZ, 1)
+	elseif type == 3 then -- rectangular shape.
 
-	
-	-- randomly generate coordinates for x and y.
-	moleculeX = torch.CudaTensor(1, symbolSize): uniform(-1 * radius, radius)
-	moleculeY = torch.CudaTensor(1, symbolSize): uniform(-1 * radius, radius)
-	-- if x^2 + y^2 >= r^2, set y^2 = r^2 - x^2 (This might be changed in order to improve randomness)
-        sqMoleculeX = torch.cmul(moleculeX, moleculeX)
-        sqMoleculeY = torch.cmul(moleculeY, moleculeY)
-        flag = (sqMoleculeX + sqMoleculeY - radius * radius):ge(0) 
-	subs = torch.pow(radius * radius - sqMoleculeX, 0.5)
-        moleculeY = torch.cmul(flag, subs) + torch.cmul(1 - flag, moleculeY)
-	-- now set z as sqrt(r^2-x^2-y^2)
-        moleculeZ = torch.abs(radius * radius - sqMoleculeX - torch.cmul(moleculeY, moleculeY)) -- in order to avoid negative values caused by double precision.
-	moleculeZ:pow(0.5)
-        --print(moleculeX, moleculeY, moleculeZ)
-	-- now randomly set sign of z coordinate (by square root only positive values are retrieved but the occurance of positive and negative values are equally likely. 
-        signGenerator = torch.CudaTensor(1, symbolSize): uniform(-1, 1)
-        signGenerator = signGenerator:ge(0)
-	moleculeZ = torch.cmul(signGenerator, moleculeZ) + torch.cmul(1 - signGenerator, -moleculeZ)
-	-- check: all values of this tensor should be radius^2 
-	--print(torch.cmul(moleculeX, moleculeX) + torch.cmul(moleculeY, moleculeY) + torch.cmul(moleculeZ, moleculeZ))
-	-- move all points by center of the sphere
-	moleculeX:add(transmittersCoordinates[transmitterNumber][1])
-	moleculeY:add(transmittersCoordinates[transmitterNumber][2])
-	moleculeZ:add(transmittersCoordinates[transmitterNumber][3])
-	return torch.cat(torch.cat(moleculeX, moleculeY, 1), moleculeZ, 1)
+	end
 end
 
 readConfiguration()
@@ -124,7 +129,7 @@ numberOfSymbols = runTime/symbolDuration
 receiverCount = torch.CudaTensor(numberOfReceivers, loopLength): fill(0) -- it might be also a double tensor
 -- generate first iteration of molecules
 -- to do concat. first initialize molecules
-molecules = generateMolecules(1)
+molecules = generateMolecules(1, 1)
 availability = torch.CudaTensor(symbolSize): fill(1)
 -- then do for other transmitters.
 for i=2, numberOfTransmitters do
@@ -137,7 +142,7 @@ for i = 1, loopLength do
 		-- evaluation of previous symbol
 		--receiverCount[1][symbolNumber] = availability:size(1) - torch.sum(availability) - torch.sum(receiverCount)
 		for i=1, numberOfTransmitters do
-        		molecules = torch.cat(molecules, generateMolecules(i))
+        		molecules = torch.cat(molecules, generateMolecules(i, 1))
         		availability = torch.cat(availability, torch.CudaTensor(symbolSize): fill(1))
      		end
 		
