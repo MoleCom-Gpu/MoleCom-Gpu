@@ -4,7 +4,6 @@ cutorch = require 'cutorch'
 cmd = torch.CmdLine()
 cmd:text()
 cmd:text()
-cmd:text('Hello')
 cmd:text('Options')
 cmd:option('-o','result.txt', 'outputfile')
 cmd:text()
@@ -157,6 +156,25 @@ for i = 1, loopLength do
 	molecules[1]: add(delta1:cmul(availability))
 	molecules[2]: add(delta2:cmul(availability))
 	molecules[3]: add(delta3:cmul(availability))
+	
+	-- CHECK IF MEMORY DEALLOCATION IS REQUIRED IN TORCH/LUA
+	for i=1, numberOfTransmitters do -- bouncing from transmitters.
+		if transmittersRadius[1] ~= 0 then
+			dd1 = molecules[1] - transmittersCoordinates[i][1]
+        		dd2 = molecules[2] - transmittersCoordinates[i][2]
+        		dd3 = molecules[3] - transmittersCoordinates[i][3]
+        		sq1 = torch.cmul(dd1, dd1)
+        		sq2 = torch.cmul(dd2, dd2)
+        		sq3 = torch.cmul(dd3, dd3)
+        		dist = sq1:add(sq2)
+        		dist:add(sq3)
+        		dist:pow(0.5)
+        		isBounced = dist:lt(transmittersRadius[1])
+			molecules[1]: add(-1 * delta1:cmul(isBounced))
+			molecules[2]: add(-1 * delta2:cmul(isBounced))
+			molecules[3]: add(-1 * delta3:cmul(isBounced))
+		end
+	end
 
 	-- single receiver.
 	dd1 = molecules[1] - receiversCoordinates[1][1]

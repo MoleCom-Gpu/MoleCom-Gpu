@@ -14,14 +14,14 @@ file = torch.DiskFile('config', 'w')
 
 local configurationFile = {
 	diffusionCoefficient = 79.4 ,
-	deltaTime = 0.005 ,
-	runTime = 5 ,
-	symbolSize = 100000 ,
-	symbolDuration = 5 ,
+	deltaTime = 0.0001 ,
+	runTime = 1 ,
+	symbolSize = 10000 ,
+	symbolDuration = 1 ,
 	numberOfReceivers = 1 ,
 	numberOfTranmitters = 1 ,
 
-	receiversCoordinates = { torch.CudaTensor({60, 60, 60}) },
+	receiversCoordinates = { torch.CudaTensor({106, 128, 40}) },
 	transmittersCoordinates = { torch.CudaTensor({40, 40, 40}) },
 	receiversRadius = {10},
 	transmittersRadius ={0} ,

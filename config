@@ -5,7 +5,7 @@
 9
 deltaTime
 1
-0.0050000000000000001
+0.0001
 2
 15
 receiversRadius
@@ -35,7 +35,7 @@ diffusionCoefficient
 10
 symbolSize
 1
-100000
+10000
 2
 14
 moleculeRadius
@@ -45,7 +45,7 @@ moleculeRadius
 7
 runTime
 1
-5
+1
 2
 23
 transmittersCoordinates
@@ -86,7 +86,7 @@ numberOfReceivers
 14
 symbolDuration
 1
-5
+1
 2
 20
 receiversCoordinates
@@ -112,4 +112,4 @@ V 1
 17
 torch.CudaStorage
 3
-60 60 60
+106 128 40
