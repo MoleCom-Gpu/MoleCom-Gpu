@@ -10,3 +10,20 @@
  * Torch Framework (please refer to http://torch.ch/docs/getting-started.html to install Torch)
  
 ## Use Scenarios
+### Configuration
+ To configure parameters of the simulation open the file **configGenerate.lua** and edit the parameters. To generate **config** file, run
+ 
+ ```
+ th configGenerate.lua
+ ```
+### Running the Simulator
+ After configuring the simulation parameters simply run the script **bm-simulator.lua** by 
+ 
+ ```
+ th bm-simulator.lua -o outputfile
+ ```
+ 
+ The results will be written into the file **outputfile**. If no filename is specified, the default file name is **result.txt**
+ 
+ The resulting file contains the number of molecules received by each receiver per symbol duration. There are some sample Matlab scripts in scripts folder those using the raw result data for interpretation.
+ 
