@@ -176,7 +176,6 @@ for i = 1, loopLength do
 		end
 	end
 
-	-- single receiver.
 	for i=1, numberOfReceivers do
 		dd1 = molecules[1] - receiversCoordinates[i][1]
 		dd2 = molecules[2] - receiversCoordinates[i][2]
