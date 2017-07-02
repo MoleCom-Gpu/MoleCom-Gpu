@@ -177,19 +177,23 @@ for i = 1, loopLength do
 	end
 
 	-- single receiver.
-	dd1 = molecules[1] - receiversCoordinates[1][1]
-	dd2 = molecules[2] - receiversCoordinates[1][2]
-	dd3 = molecules[3] - receiversCoordinates[1][3]
-	sq1 = torch.cmul(dd1, dd1)
-	sq2 = torch.cmul(dd2, dd2)
-	sq3 = torch.cmul(dd3, dd3)
-	dist = sq1:add(sq2)
-	dist:add(sq3)
-	dist:pow(0.5)
-	availability = dist:gt(receiversRadius[1])
+	for i=1, numberOfReceivers do
+		dd1 = molecules[1] - receiversCoordinates[i][1]
+		dd2 = molecules[2] - receiversCoordinates[i][2]
+		dd3 = molecules[3] - receiversCoordinates[i][3]
+		sq1 = torch.cmul(dd1, dd1)
+		sq2 = torch.cmul(dd2, dd2)
+		sq3 = torch.cmul(dd3, dd3)
+		dist = sq1:add(sq2)
+		dist:add(sq3)
+		dist:pow(0.5)
+		availability = dist:gt(receiversRadius[i])
+	end
 end
 --last symbol
-receiverCount[1][numberOfSymbols] = availability:size(1) - torch.sum(availability) - torch.sum(receiverCount)
+for i=1, numberOfReceivers do
+	receiverCount[i][numberOfSymbols] = availability:size(1) - torch.sum(availability) - torch.sum(receiverCount)
+end
 file = io.open(outputFileName, 'w')
 --file:write('Simulation results\n')
 --file:write('Total number of received molecules\n')
