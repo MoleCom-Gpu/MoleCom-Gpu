@@ -202,14 +202,13 @@ file = io.open(outputFileName, 'w')
 --file:write(availability:size(1))
 --file:write("\n\n")
 --file:write("Received molecules per symbol duration for Receiver 1\n")
-for i=1, receiverCount:size(2) do
-	--file:write(i)
-	--file:write(" => ")
-	--file:write(receiverCount[1][i])
-	file:write(receiverCount[1][i])
-	file:write("\n")
+for i=1, receiverCount:size(1) do
+	file:write("Number of received molecules per symbol duration by Receiver #" .. i .. "\n")
+	for j=1, receiverCount:size(2) do
+		file:write(receiverCount[i][j])
+		file:write("\n")
+	end
+	print("Total number of received molecules by Receiver #" .. i .." is " .. torch.sum(receiverCount[i]) .. "\n")
 end
---file:write(torch.sum(receiverCount[1]))
-
---print(receiverCount[1])
+print("Detailed results are written into " .. outputFileName)
 

@@ -11,9 +11,13 @@ deltaTime
 receiversRadius
 3
 2
+2
 1
 1
 1
+10
+1
+2
 1
 10
 2
@@ -45,7 +49,7 @@ moleculeRadius
 7
 runTime
 1
-1
+3
 2
 23
 transmittersCoordinates
@@ -81,7 +85,7 @@ numberOfTranmitters
 17
 numberOfReceivers
 1
-1
+2
 2
 14
 symbolDuration
@@ -92,7 +96,7 @@ symbolDuration
 receiversCoordinates
 3
 7
-1
+2
 1
 1
 4
@@ -112,4 +116,24 @@ V 1
 17
 torch.CudaStorage
 3
-106 128 40
+55 55 55
+1
+2
+4
+10
+3
+V 1
+16
+torch.CudaTensor
+1
+3
+1
+1
+4
+11
+3
+V 1
+17
+torch.CudaStorage
+3
+25 25 25
